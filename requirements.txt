@@ -2,4 +2,7 @@ langchain
 chromadb 
 sentence-transformers
 langchain-community
+langchain-chroma
 langchain-text-splitters
+groq
+rank-bm25
