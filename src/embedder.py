@@ -1,7 +1,7 @@
 from langchain_core.embeddings import Embeddings
-from langchain_community.embeddings import HuggingFaceEmbeddings
 import hashlib
 import re
+from sentence_transformers import SentenceTransformer
 
 
 class SimpleHashEmbeddings(Embeddings):
@@ -30,12 +30,23 @@ class SimpleHashEmbeddings(Embeddings):
     def embed_query(self, text):
         return self._embed(text)
 
+
+class SentenceTransformerEmbeddings(Embeddings):
+    def __init__(self, model_name):
+        self.model = SentenceTransformer(model_name, local_files_only=True)
+
+    def embed_documents(self, texts):
+        embeddings = self.model.encode(list(texts), show_progress_bar=False)
+        return embeddings.tolist()
+
+    def embed_query(self, text):
+        embedding = self.model.encode(text, show_progress_bar=False)
+        return embedding.tolist()
+
+
 def get_embedding_model():
     try:
-        return HuggingFaceEmbeddings(
-            model_name = "all-MiniLM-L6-v2",
-            model_kwargs = {"local_files_only": True}
-        )
+        return SentenceTransformerEmbeddings("sentence-transformers/all-MiniLM-L6-v2")
     except Exception as exc:
         print(f"Could not load Hugging Face embeddings: {exc}")
         print("Using offline hash embeddings instead.")
